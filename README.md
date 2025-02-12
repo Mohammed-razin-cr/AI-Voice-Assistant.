@@ -82,7 +82,7 @@ python app.py
 ## **📸 Output Preview**  
 
 ![Uploading image.png…]
-![AI Voice Assistant](https://i.imgur.com/image.png)
+![AI Voice Assistant](https://i.imgur.com/first.png)
 
 
 ---
