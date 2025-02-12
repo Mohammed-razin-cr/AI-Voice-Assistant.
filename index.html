@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voice Assistant- Razin</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #0f172a, #1e293b);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            color: white;
+        }
+
+        .container {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 50px;
+            border-radius: 15px;
+            box-shadow: 0 6px 30px rgba(0, 255, 255, 0.4);
+            backdrop-filter: blur(12px);
+            width: 500px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            color: #00eaff;
+            text-shadow: 0 0 15px #00eaff;
+        }
+
+        .mic-wrapper {
+            margin-top: 30px;
+        }
+
+        .mic-btn {
+            background: radial-gradient(circle, #5be7f7, #008CBA);
+            color: white;
+            font-size: 2rem;
+            padding: 30px 50px;
+            border-radius: 50px;
+            border: none;
+            cursor: pointer;
+            outline: none;
+            box-shadow: 0 0 25px #b8f3f8;
+            transition: 0.3s;
+        }
+
+        .mic-btn:hover {
+            box-shadow: 0 0 35px #00eaff;
+            transform: scale(1.15);
+        }
+
+        #response-text {
+            margin-top: 15px;
+            font-size: 1.5rem;
+            color: #d7f7fa;
+            text-shadow: 0 0 8px #e8fcfd;
+            font-weight:500;
+        }
+
+        #conversation-history {
+            margin-top: 30px;
+            font-size: 1.2rem;
+            color: #ddd;
+            max-height: 400px;
+            overflow-y: auto;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 12px;
+        }
+
+        .history-entry {
+            margin-bottom: 15px;
+            padding: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .user-input {
+            font-weight: bold;
+            color: #00eaff;
+        }
+
+        .ai-response {
+            margin-top: 8px;
+            color: #fff;
+        }
+
+        .footer {
+            margin-top: 30px;
+            font-size: 1rem;
+            color: #00eaff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>AI Voice Assistant</h1>
+        <div class="mic-wrapper">
+            <button id="start-record-btn" class="mic-btn">🎤 Speak Now</button>
+        </div>
+        <div id="response-text">Listening...</div>
+        <div id="conversation-history"></div>
+        <div class="footer">Developed by Razin </div>
+    </div>
+    <script src="/static/script.js"></script>
+</body>
+
+
+<script>
+    const startRecordBtn = document.getElementById('start-record-btn');
+    const responseText = document.getElementById('response-text');
+    const conversationHistory = document.getElementById('conversation-history');
+
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const recognition = new SpeechRecognition();
+
+    recognition.onstart = function() {
+        responseText.innerHTML = 'Listening...';
+    };
+
+    recognition.onspeechend = function() {
+        recognition.stop();
+    };
+
+    recognition.onresult = function(event) {
+        const userInput = event.results[0][0].transcript;
+        responseText.innerHTML = `You said: "${userInput}"`;
+
+        // Send user input to Flask server
+        fetch('/process_voice', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ user_input: userInput }),
+        })
+        .then(response => response.json())
+        .then(data => {
+            const aiResponse = data.response;
+            responseText.innerHTML = `AI Response: "${aiResponse}"`;
+
+            // Update conversation history with both user input and AI response
+            updateConversationHistory(data.conversation_history);
+
+            speakResponse(aiResponse);
+        })
+        .catch(error => {
+            responseText.innerHTML = 'Error processing request.';
+        });
+    };
+
+    startRecordBtn.addEventListener('click', () => {
+        recognition.start();
+    });
+
+    // Update the conversation history section
+    function updateConversationHistory(history) {
+        conversationHistory.innerHTML = '';  // Clear existing history
+
+        history.forEach(entry => {
+            const historyEntry = document.createElement('div');
+            historyEntry.classList.add('history-entry');
+
+            const userInput = document.createElement('div');
+            userInput.classList.add('user-input');
+            userInput.innerHTML = `You: ${entry.user}`;
+
+            const aiResponse = document.createElement('div');
+            aiResponse.classList.add('ai-response');
+            aiResponse.innerHTML = `AI: ${entry.ai}`;
+
+            historyEntry.appendChild(userInput);
+            historyEntry.appendChild(aiResponse);
+
+            conversationHistory.appendChild(historyEntry);
+        });
+    }
+    function speakResponse(text) {
+        const synth = window.speechSynthesis;
+        const utterance = new SpeechSynthesisUtterance(text);
+        synth.speak(utterance);
+    }
+</script>
+</html>
