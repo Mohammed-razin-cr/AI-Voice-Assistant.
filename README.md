@@ -81,9 +81,7 @@ python app.py
 
 ## **📸 Output Preview**  
 
-![Uploading image.png…]
-![AI Voice Assistant](https://i.imgur.com/first.png)
-
+![image](https://github.com/user-attachments/assets/c6dee3a4-d132-4b24-8f55-e3d6ae38b85c)
 
 ---
 
