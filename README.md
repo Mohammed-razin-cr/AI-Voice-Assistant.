@@ -81,7 +81,7 @@ python app.py
 
 ## **📸 Output Preview**  
 
-![Uploading image.png…]()
+![Uploading image.png…]
 
 
 ---
